@@ -22,7 +22,7 @@ Este proyecto utiliza técnicas de ciencia de datos y aprendizaje automático pa
 *   **Fácil de usar:** Solo necesitas proporcionarnos una playlist con tus canciones favoritas, ¡y nosotros nos encargamos del resto! 🧘‍♀️
 
 ## ¿Cómo ejecutarlo? 🛠️
-1. ** Instala Python 3.9:**
+1.  **Instala Python 3.9.0**
 2.  **Pandas**
 3.  **sickit learn**
 4.  **Clona este repositorio:** 
