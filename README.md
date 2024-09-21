@@ -24,8 +24,10 @@ Este proyecto utiliza técnicas de ciencia de datos y aprendizaje automático pa
 ## ¿Cómo ejecutarlo? 🛠️
 1.  **Instala Python 3.9.0**
 2.  **Pandas**
-3.  **scikit-learn**
-4.  **tabulate**
-5.  **Clona este repositorio:** 
-6.  **Ejecuta el script:** `python recomendation-spoti.py`
+3.  **Scikit-learn**
+4.  **Tabulate**
+5.  **Flask**
+6.  **Matplotlib**
+7.  **Clona este repositorio:** 
+8.  **Ejecuta el script:** `python recomendation-spoti.py`
 
