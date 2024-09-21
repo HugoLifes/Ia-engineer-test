@@ -94,14 +94,23 @@ def create_new_playlist(user_tracks, cluster_labels, all_song_data):
     user_tracks_indices = all_song_data[all_song_data['track_id'].isin(user_tracks_data['track_id'])].index 
     
     user_cluster_labels = cluster_labels[user_tracks_indices]
-    most_frequent_cluster = Counter(user_cluster_labels).most_common(1)[0][0]
+    
+    most_frequent_cluster = Counter(user_cluster_labels).most_common(2)
 
     # Filter candidate tracks based on 'track_id'
-    candidate_tracks = all_song_data[cluster_labels == most_frequent_cluster]['track_id']
-    candidate_tracks = candidate_tracks[~candidate_tracks.isin(user_tracks_data['track_id'])]
-    
-    new_playlist_tracks = random.sample(list(candidate_tracks), 5)
-    return all_song_data[all_song_data['track_id'].isin(new_playlist_tracks)]
+    # candidate_tracks = all_song_data[cluster_labels == most_frequent_cluster]['track_id']
+    # candidate_tracks = candidate_tracks[~candidate_tracks.isin(user_tracks_data['track_id'])]
+    new_playlist_track = []
+    for cluster_label, _ in most_frequent_cluster:
+        # Filter candidate tracks based on 'track_id'
+        candidate_tracks = all_song_data[cluster_labels == cluster_label]['track_id']
+        candidate_tracks = candidate_tracks[~candidate_tracks.isin(user_tracks_data['track_id'])]
+
+        new_playlist_tracks = random.sample(list(candidate_tracks), 5)
+        new_playlist = all_song_data[all_song_data['track_id'].isin(new_playlist_tracks)]
+        new_playlist_track.append(new_playlist)
+
+    return new_playlist_track
 
 user_new_playlist_list = []
 for user_tracks in user_tracks_list:
@@ -115,12 +124,17 @@ for i in range(len(user_recommendations_list)):
 # imprimimos las recomendaciones por usuario
 user_names = ['User O', 'User J', 'User B', 'User A']
 for i in range(len(user_names)):
+    # Combinar `user_tracks[i]` con `spotify_songs_df` para obtener `playlist_genre` y `playlist_subgenre`
+    user_tracks_with_genre = pd.merge(user_tracks_list[i], spotify_songs_df[['track_id', 'playlist_genre', 'playlist_subgenre']], left_on='Id', right_on='track_id')
+    
     print(f"\nRecomendaciones para {user_names[i]}:")
     print("\nPlaylists Existentes:")
     print(user_existing_recommendations_list[i].to_markdown(index=False))
     print("\nNuevas Playlists:")
-    print(user_new_playlist_list[i][['track_name', 'track_artist', 'playlist_genre', 'playlist_subgenre']].head(5).to_markdown(index=False))
-    print("\nRecomendaciones basadas en similitud:")
+    for j, new_playlist in enumerate(user_new_playlist_list[i]):
+        print(f"\n  Playlist {j+1}:")
+        print(new_playlist[['track_name', 'track_artist', 'playlist_genre', 'playlist_subgenre']].head(5).to_markdown(index=False))
+    print("\nRecomendaciones basadas en similitud coseno:")
     print(user_recommendations_list[i][['track', 'playlist_genre', 'playlist_subgenre']].head(5).to_markdown(index=False))
 
 from sklearn.metrics import pairwise_distances
@@ -223,7 +237,7 @@ for i in range(len(user_names)):
     print(f"Diversidad (Índice de Gini): {diversity:.2f}")
     print(f"Novedad: {novelty:.2f}")
 
-    # Interpretación de los resultados (puedes personalizar esto según tus observaciones)
+    # Interpretación de los resultados
     print("\nInterpretación:")
     if precision > 0.5:
         print("  - Las recomendaciones son bastante relevantes a los gustos del usuario.")
