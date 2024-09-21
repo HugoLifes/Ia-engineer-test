@@ -205,7 +205,7 @@ def calculate_novelty(user_recommendations, user_tracks, spotify_songs_df):
     return user_popularity - recommended_popularity
 
 # Combinar `user_tracks[i]` con `spotify_songs_df` para obtener `playlist_genre` y `playlist_subgenre`
-user_tracks_with_genre = [pd.merge(user_track, spotify_songs_df[['track_id', 'playlist_genre', 'playlist_subgenre']], left_on='Id', right_on='track_id') for user_track in user_tracks]
+user_tracks_with_genre = [pd.merge(user_track, spotify_songs_df[['track_id', 'playlist_genre', 'playlist_subgenre']], left_on='Id', right_on='track_id') for user_track in user_tracks_list]
 
 # Calcular y mostrar las métricas para cada usuario
 user_names = ['User O', 'User J', 'User B', 'User A']
