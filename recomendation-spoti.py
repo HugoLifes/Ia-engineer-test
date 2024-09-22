@@ -292,7 +292,7 @@ def index():
         user_recommendations = {
             'user_name': user_names[i],
             'existing_playlists': existing_recommendations.to_dict(orient='records'),
-            'new_playlists': [new_playlist[['track_name', 'track_artist', 'playlist_genre', 'playlist_subgenre']].head(5).to_dict(orient='records') for playlist in new_playlist],
+            'new_playlists': [pl[['track_name', 'track_artist', 'playlist_genre', 'playlist_subgenre']].head(5).to_dict(orient='records') for pl in user_new_playlist_list[i]],
             'recommendations': user_recommendations_list[i][['track', 'playlist_genre', 'playlist_subgenre']].head(5).to_dict(orient='records'),
             'metrics': user_metrics
         }
