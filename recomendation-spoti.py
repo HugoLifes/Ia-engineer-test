@@ -5,7 +5,8 @@ from sklearn.cluster import KMeans
 
 from collections import Counter
 import random
-
+from flask import Flask, render_template
+import os
 #Leemos archivos csv en los dataframes
 
 user_o_df = pd.read_csv('User_O.csv')
@@ -121,7 +122,7 @@ for user_tracks in user_tracks_list:
 for i in range(len(user_recommendations_list)):
     user_recommendations_list[i] = pd.merge(user_recommendations_list[i], spotify_songs_df[['track_id', 'playlist_genre', 'playlist_subgenre']], on='track_id', how='left')
 
-# imprimimos las recomendaciones por usuario
+
 user_names = ['User O', 'User J', 'User B', 'User A']
 for i in range(len(user_names)):
     # Combinar `user_tracks[i]` con `spotify_songs_df` para obtener `playlist_genre` y `playlist_subgenre`
@@ -137,6 +138,9 @@ for i in range(len(user_names)):
     print("\nRecomendaciones basadas en similitud coseno:")
     print(user_recommendations_list[i][['track', 'playlist_genre', 'playlist_subgenre']].head(5).to_markdown(index=False))
 
+# codigo flask para ver en web
+
+    
 from sklearn.metrics import pairwise_distances
 import numpy as np
 
@@ -222,9 +226,8 @@ def calculate_novelty(user_recommendations, user_tracks, spotify_songs_df):
 user_tracks_with_genre = [pd.merge(user_track, spotify_songs_df[['track_id', 'playlist_genre', 'playlist_subgenre']], left_on='Id', right_on='track_id') for user_track in user_tracks_list]
 
 # Calcular y mostrar las métricas para cada usuario
+
 user_names = ['User O', 'User J', 'User B', 'User A']
-
-
 for i in range(len(user_names)):
     precision = calculate_precision(user_recommendations_list[i], user_tracks_with_genre[i])  # Usar user_tracks_with_genre
     recall = calculate_recall(user_recommendations_list[i], user_tracks_with_genre[i])      # Usar user_tracks_with_genre
@@ -258,3 +261,45 @@ for i in range(len(user_names)):
         print("  - Las recomendaciones incluyen canciones menos populares (más novedosas) que las que el usuario suele escuchar.")
     else:
         print("  - Las recomendaciones se inclinan hacia canciones populares que el usuario podría ya conocer.")
+        
+        
+app = Flask(__name__)
+@app.route('/')
+def index():
+    all_user_recommendations = []
+    # imprimimos las recomendaciones por usuario
+    user_names = ['User O', 'User J', 'User B', 'User A']
+    for i in range(len(user_names)):
+        precision = calculate_precision(user_recommendations_list[i], user_tracks_with_genre[i])  # Usar user_tracks_with_genre
+        recall = calculate_recall(user_recommendations_list[i], user_tracks_with_genre[i])      # Usar user_tracks_with_genre
+        diversity = calculate_diversity(user_recommendations_list[i])
+        novelty = calculate_novelty(user_recommendations_list[i], user_tracks_with_genre[i], spotify_songs_df)  # Usar user_tracks_with_genre
+        # Combinar `user_tracks[i]` con `spotify_songs_df` para obtener `playlist_genre` y `playlist_subgenre`
+        
+        
+        user_metrics = {
+            'precision': precision,
+            'recall': recall,
+            'diversity': diversity,
+            'novelty': novelty,
+            'interpretation': {
+                'precision': "  - Las recomendaciones son bastante relevantes a los gustos del usuario." if precision > 0.5 else "  - Las recomendaciones podrían ser más relevantes a los gustos del usuario.",
+                'recall': "  - Se está cubriendo una buena parte de los géneros y subgéneros que le gustan al usuario." if recall > 0.5 else "  - Las recomendaciones podrían explorar más géneros y subgéneros que le gustan al usuario.",
+                'diversity': "  - Las recomendaciones son diversas en términos de géneros y subgéneros." if diversity > 0.5 else "  - Las recomendaciones podrían ser más diversas en términos de géneros y subgéneros.",
+                'novelty': "  - Las recomendaciones incluyen canciones menos populares (más novedosas) que las que el usuario suele escuchar." if novelty > 0 else "  - Las recomendaciones se inclinan hacia canciones populares que el usuario podría ya conocer."
+            }
+        }
+        user_recommendations = {
+            'user_name': user_names[i],
+            'existing_playlists': existing_recommendations.to_dict(orient='records'),
+            'new_playlists': [new_playlist[['track_name', 'track_artist', 'playlist_genre', 'playlist_subgenre']].head(5).to_dict(orient='records') for playlist in new_playlist],
+            'recommendations': user_recommendations_list[i][['track', 'playlist_genre', 'playlist_subgenre']].head(5).to_dict(orient='records'),
+            'metrics': user_metrics
+        }
+        
+        all_user_recommendations.append(user_recommendations)
+    return render_template('index.html', recommendations=all_user_recommendations)
+
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 8080))  # Lee el puerto de la variable de entorno PORT, o usa 8080 si no está definida
+    app.run(host='0.0.0.0', port=port, debug=True)  # Escucha en todas las interfaces (0.0.0.0) en el puerto especificado

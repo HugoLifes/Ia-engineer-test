@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Recomendaciones Musicales</title>
+</head>
+<body>
+    {% for user_rec in recommendations %}
+        <h1>Recomendaciones para {{ user_rec.user_name }}</h1>
+        
+        <h2>Métricas de Evaluación:</h2>
+        <ul>
+            <li>Precisión: {{'%0.2f'|format( user_rec.metrics.precision|float) }}</li>
+            <li>Recall: {{'%0.2f'|format( user_rec.metrics.recall|float)}}</li>
+            <li>Diversidad (Índice de Gini): {{'%0.2f'|format(  user_rec.metrics.diversity|float) }}</li>
+            <li>Novedad: {{'%0.2f'|format( user_rec.metrics.novelty|float)}}</li>
+        </ul>
+
+        <h2>Interpretación:</h2>
+        <ul>
+            <li>{{ user_rec.metrics.interpretation.precision }}</li>
+            <li>{{ user_rec.metrics.interpretation.recall }}</li>
+            <li>{{ user_rec.metrics.interpretation.diversity }}</li>
+            <li>{{user_rec.metrics.interpretation.novelty }}</li>
+        </ul>
+
+        <h2>Playlists Existentes:</h2>
+        <ul>
+            {% for playlist in user_rec.existing_playlists %}
+                <li>{{ playlist.playlist_name }} ({{ playlist.common_tracks_count }} canciones en común)</li>
+            {% endfor %}
+        </ul>
+
+        <h2>Nuevas Playlists:</h2>
+        {% for playlist in user_rec.new_playlists[:2] %} 
+            <h3>Playlist {{ loop.index }}:</h3>
+            <ul>
+                {% for track in playlist %}
+                    <li>{{ track.track_name }} - {{ track.track_artist }} ({{ track.playlist_genre }} - {{ track.playlist_subgenre }})</li>
+                {% endfor %}
+            </ul>
+        {% endfor %}
+
+        <h2>Recomendaciones basadas en similitud:</h2>
+        <ul>
+            {% for track in user_rec.recommendations %}
+                <li>{{ track.track }} 
+                    <ul>
+                        <li>Género: {{ track.playlist_genre }}</li>
+                        <li>Subgénero: {{ track.playlist_subgenre }}</li>
+                    </ul>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endfor %}
+</body>
+</html>
