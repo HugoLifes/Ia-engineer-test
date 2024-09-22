@@ -9,6 +9,7 @@ from flask import Flask, render_template
 import os
 #Leemos archivos csv en los dataframes
 
+#new_user = pd.read_csv('new_user.csv')
 user_o_df = pd.read_csv('User_O.csv')
 user_j_df = pd.read_csv('User_J.csv')
 user_b_df = pd.read_csv('User_B.csv')
@@ -20,13 +21,15 @@ spotify_songs_df = pd.read_csv('spotify_songs.csv')
 spotify_songs_df.dropna(subset=['track_name','track_artist'],inplace=True)
 spotify_songs_df['track'] = spotify_songs_df['track_name'] + ' - ' + spotify_songs_df['track_artist']
 
-for user_df in [user_o_df, user_j_df, user_b_df, user_a_df]:
+
+for user_df in [user_o_df, user_j_df, user_b_df, user_a_df]: #añadir new_user_df
     user_df['track'] = user_df['Song'] + ' - ' + user_df['Artist']
+    
     
 
 # Encontramos unas canciones comunes y preparamos datos para recomendaciones
 
-user_dfs = [user_o_df, user_j_df, user_b_df, user_a_df]
+user_dfs = [user_o_df, user_j_df, user_b_df, user_a_df] #añadir new_user_df
 user_common_dfs = []
 user_tracks_list = []
 user_features_list = []
@@ -123,7 +126,7 @@ for i in range(len(user_recommendations_list)):
     user_recommendations_list[i] = pd.merge(user_recommendations_list[i], spotify_songs_df[['track_id', 'playlist_genre', 'playlist_subgenre']], on='track_id', how='left')
 
 
-user_names = ['User O', 'User J', 'User B', 'User A']
+user_names = ['User O', 'User J', 'User B', 'User A'] # añadir new_user
 for i in range(len(user_names)):
     # Combinar `user_tracks[i]` con `spotify_songs_df` para obtener `playlist_genre` y `playlist_subgenre`
     user_tracks_with_genre = pd.merge(user_tracks_list[i], spotify_songs_df[['track_id', 'playlist_genre', 'playlist_subgenre']], left_on='Id', right_on='track_id')
@@ -227,7 +230,7 @@ user_tracks_with_genre = [pd.merge(user_track, spotify_songs_df[['track_id', 'pl
 
 # Calcular y mostrar las métricas para cada usuario
 
-user_names = ['User O', 'User J', 'User B', 'User A']
+user_names = ['User O', 'User J', 'User B', 'User A'] #add new user
 for i in range(len(user_names)):
     precision = calculate_precision(user_recommendations_list[i], user_tracks_with_genre[i])  # Usar user_tracks_with_genre
     recall = calculate_recall(user_recommendations_list[i], user_tracks_with_genre[i])      # Usar user_tracks_with_genre
@@ -268,7 +271,7 @@ app = Flask(__name__)
 def index():
     all_user_recommendations = []
     # imprimimos las recomendaciones por usuario
-    user_names = ['User O', 'User J', 'User B', 'User A']
+    user_names = ['User O', 'User J', 'User B', 'User A'] # añadir new_user
     for i in range(len(user_names)):
         precision = calculate_precision(user_recommendations_list[i], user_tracks_with_genre[i])  # Usar user_tracks_with_genre
         recall = calculate_recall(user_recommendations_list[i], user_tracks_with_genre[i])      # Usar user_tracks_with_genre
